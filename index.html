@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#F4F5F7">
+    <title>RuangDiri</title>
+    <style>
+        :root {
+            /* Tema Terang */
+            --bg: #F4F5F7;
+            --primary: #111827;
+            --secondary: #6B7280;
+            --accent: #6C63FF;
+            --success: #22C55E;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --card-bg: rgba(255, 255, 255, 0.72);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --border: rgba(0, 0, 0, 0.05);
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-nav: 0 -4px 24px rgba(0,0,0,0.06);
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        .dark {
+            /* Tema Gelap */
+            --bg: #0F1115;
+            --primary: #F5F5F5;
+            --secondary: #A1A1AA;
+            --card-bg: rgba(30, 32, 38, 0.8);
+            --modal-bg: rgba(24, 24, 28, 0.95);
+            --nav-bg: rgba(30, 32, 38, 0.85);
+            --border: rgba(255, 255, 255, 0.05);
+            --text-main: #F5F5F5;
+            --text-muted: #A1A1AA;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-nav: 0 -4px 24px rgba(0,0,0,0.3);
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #app {
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            background-color: var(--bg);
+            box-shadow: 0 0 40px rgba(0,0,0,0.02);
+        }
+
+        /* Tipografi */
+        h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+        h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 12px; }
+        h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        p { color: var(--text-muted); font-size: 15px; }
+        .text-sm { font-size: 13px; }
+        .font-semibold { font-weight: 600; }
+        .text-accent { color: var(--accent); }
+        .text-danger { color: var(--danger); }
+        .text-success { color: var(--success); }
+        
+        /* Tata Letak */
+        .view {
+            padding: 40px 20px calc(80px + var(--safe-bottom)) 20px;
+            animation: fadeIn 0.3s ease forwards;
+            display: none;
+        }
+        .view.active { display: block; }
+        
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease;
+        }
+
+        /* Navigasi */
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 560px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 15px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            box-shadow: var(--shadow-nav);
+            border: 1px solid var(--border);
+            z-index: 50;
+            transition: bottom 0.3s ease;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            gap: 4px;
+            padding: 8px;
+            border-radius: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .nav-item svg { width: 24px; height: 24px; stroke-width: 2; transition: all 0.2s; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active svg { transform: scale(1.1); }
+        
+        .nav-fab {
+            background: var(--accent);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.4);
+            transform: translateY(-5px);
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .nav-fab:active { transform: translateY(-5px) scale(0.95); }
+        .nav-fab svg { width: 24px; height: 24px; stroke-width: 2.5; stroke: white; }
+
+        /* Tombol & Input */
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            margin-bottom: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        textarea { resize: vertical; min-height: 100px; }
+
+        /* Checkbox */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+        .checkbox-wrapper:last-child { border-bottom: none; }
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            border: 2px solid var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .checkbox.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .checkbox.checked::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translateY(-1px);
+        }
+        .task-text { flex: 1; font-size: 16px; transition: all 0.2s; }
+        .checked + .task-text { text-decoration: line-through; color: var(--text-muted); }
+
+        /* Pilihan Mood */
+        .mood-selector {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+        .mood-btn {
+            font-size: 32px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            filter: grayscale(100%);
+            opacity: 0.5;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1);
+        }
+        .mood-btn.active {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        /* Progress Bar */
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Modal / Bottom Sheet */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-backdrop.active { opacity: 1; pointer-events: all; }
+        
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 100%;
+            max-width: 600px;
+            background: var(--modal-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            padding-bottom: calc(24px + var(--safe-bottom));
+            z-index: 101;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        }
+        .bottom-sheet.active { transform: translateX(-50%) translateY(0); }
+        .sheet-handle {
+            width: 40px; height: 5px;
+            background: var(--secondary);
+            border-radius: 3px;
+            margin: 0 auto 20px auto;
+            opacity: 0.3;
+        }
+
+        /* Notifikasi (Toast) */
+        .toast-container {
+            position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-main);
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease forwards;
+            border: 1px solid var(--border);
+        }
+        
+        /* Utilitas & Grid */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        .mt-4 { margin-top: 16px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-4 { margin-bottom: 16px; }
+        
+        /* Komponen Spesifik */
+        .habit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+        }
+        .habit-info { display: flex; align-items: center; gap: 12px; }
+        .habit-emoji { font-size: 24px; background: var(--card-bg); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .habit-stats { font-size: 12px; color: var(--text-muted); display: flex; gap: 8px; margin-top: 2px;}
+        .habit-check {
+            width: 32px; height: 32px; border-radius: 16px; border: 2px solid var(--border);
+            display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
+        }
+        .habit-check.done { background: var(--success); border-color: var(--success); color: white; }
+
+        .journal-card { cursor: pointer; }
+        .journal-card:hover { transform: translateY(-2px); }
+        .journal-date { font-size: 12px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .life-area-row { margin-bottom: 16px; }
+        .life-area-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 0; padding: 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px; width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: var(--shadow-sm);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 8px;
+            cursor: pointer;
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        /* Onboarding */
+        .onboarding-slide { display: none; text-align: center; padding-top: 40px; }
+        .onboarding-slide.active { display: block; animation: fadeIn 0.5s ease; }
+        .onboarding-icon { font-size: 80px; margin-bottom: 20px; }
+        .onboarding-dots { display: flex; justify-content: center; gap: 8px; margin: 30px 0; }
+        .dot { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: 0.3s; }
+        .dot.active { background: var(--accent); width: 24px; }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 11px; top: 0; bottom: -20px;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item:last-child::before { display: none; }
+        .timeline-emoji {
+            position: absolute;
+            left: 0; top: 0;
+            width: 24px; height: 24px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 12px;
+            border: 2px solid var(--bg);
+            z-index: 1;
+        }
+
+        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.7; }
+        .empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+        /* Animasi */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { 
+            from { transform: translateY(-20px); opacity: 0; } 
+            to { transform: translateY(0); opacity: 1; } 
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    
+    <!-- Toasts (Notifikasi) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Tampilan Onboarding -->
+    <div id="view-onboarding" class="view">
+        <div id="ob-slide-1" class="onboarding-slide active">
+            <div class="onboarding-icon">🎯</div>
+            <h1>Rencanakan hidupmu.</h1>
+            <p>Ubah impian menjadi tindakan harian yang bermakna.</p>
+        </div>
+        <div id="ob-slide-2" class="onboarding-slide">
+            <div class="onboarding-icon">🧠</div>
+            <h1>Pahami dirimu.</h1>
+            <p>Lacak suasana hati, kebiasaan, dan refleksi dirimu.</p>
+        </div>
+        <div id="ob-slide-3" class="onboarding-slide">
+            <div class="onboarding-icon">✨</div>
+            <h1>Bangun ceritamu.</h1>
+            <p>Buat lini masa perjalanan kehidupan personalmu.</p>
+        </div>
+        <div id="ob-slide-4" class="onboarding-slide">
+            <div class="onboarding-icon">👋</div>
+            <h1>Mari personalisasi.</h1>
+            <div style="text-align: left; margin-top: 30px;">
+                <label class="font-semibold text-sm">Siapa namamu?</label>
+                <input type="text" id="ob-name" placeholder="Nama Kamu" class="mt-4">
+                
+                <label class="font-semibold text-sm mt-4" style="display:block">Apa yang paling penting bagimu saat ini?</label>
+                <select id="ob-focus" class="mt-4">
+                    <option value="Karier">💼 Karier</option>
+                    <option value="Keuangan">💰 Keuangan</option>
+                    <option value="Kesehatan">🏃 Kesehatan</option>
+                    <option value="Keluarga">🏠 Keluarga</option>
+                    <option value="Hubungan">❤️ Hubungan</option>
+                    <option value="Pendidikan">📚 Pendidikan</option>
+                    <option value="Spiritual">🕌 Spiritual</option>
+                    <option value="Pengembangan Diri">🧠 Pengembangan Diri</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="onboarding-dots" id="ob-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <button class="btn" id="ob-next-btn" onclick="nextOnboarding()">Selanjutnya</button>
+    </div>
+
+    <!-- Tampilan Hari Ini -->
+    <div id="view-today" class="view">
+        <header class="mb-4">
+            <p id="today-date" class="text-sm font-semibold text-accent" style="text-transform:uppercase"></p>
+            <h1 id="today-greeting">Selamat Pagi</h1>
+            <p id="today-quote" class="text-sm" style="font-style: italic;"></p>
+        </header>
+
+        <div class="card">
+            <div class="flex-between mb-4">
+                <h3>Fokus Hari Ini</h3>
+                <span class="text-sm font-semibold text-accent" id="focus-progress-text">0 dari 3 selesai</span>
+            </div>
+            <div class="progress-bar-bg mb-4">
+                <div class="progress-bar-fill" id="focus-progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="focus-list">
+                <!-- Tugas Fokus dimuat di sini -->
+            </div>
+            <button class="btn btn-outline mt-4" id="add-focus-btn" onclick="openModal('add-task-modal')" style="padding: 8px; font-size: 14px;">
+                + Tambah Prioritas (Maks 3)
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>Bagaimana perasaanmu hari ini?</h3>
+            <div class="mood-selector" id="mood-selector">
+                <button class="mood-btn" data-mood="😞" onclick="setMood('😞')">😞</button>
+                <button class="mood-btn" data-mood="😕" onclick="setMood('😕')">😕</button>
+                <button class="mood-btn" data-mood="😐" onclick="setMood('😐')">😐</button>
+                <button class="mood-btn" data-mood="🙂" onclick="setMood('🙂')">🙂</button>
+                <button class="mood-btn" data-mood="😄" onclick="setMood('😄')">😄</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex-between mb-4">
+                <h3>Kebiasaan Hari Ini</h3>
+                <button onclick="openModal('add-habit-modal')" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;">+ Tambah</button>
+            </div>
+            <div id="habit-list">
+                <!-- Kebiasaan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tampilan Tujuan -->
+    <div id="view-goals" class="view">
+        <div class="flex-between mb-4">
+            <h1>Tujuan Hidup</h1>
+            <button onclick="openModal('add-goal-modal')" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;font-size:24px;">+</button>
+        </div>
+        <div id="goals-list">
+            <!-- Tujuan dimuat di sini -->
+        </div>
+    </div>
+
+    <!-- Tampilan Jurnal -->
+    <div id="view-journal" class="view">
+        <div class="flex-between mb-4">
+            <h1>Jurnal Kamu</h1>
+            <button onclick="openModal('add-journal-modal')" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;font-size:24px;">+</button>
+        </div>
+        <input type="text" id="journal-search" placeholder="Cari jurnal..." onkeyup="renderJournal()">
+        <div id="journal-list">
+            <!-- Jurnal dimuat di sini -->
+        </div>
+    </div>
+
+    <!-- Tampilan Saya (Dashboard Kehidupan) -->
+    <div id="view-me" class="view">
+        <div class="flex-between align-center mb-4">
+            <h1>Profil & Kehidupan</h1>
+            <button onclick="openModal('settings-modal')" style="background:none;border:none;font-size:24px;cursor:pointer;">⚙️</button>
+        </div>
+
+        <div class="card flex-center" style="flex-direction: column; gap:10px;">
+            <div style="font-size: 64px;" id="profile-avatar">👤</div>
+            <h2 id="profile-name" style="margin:0;">User</h2>
+            <p id="profile-focus" class="text-sm"></p>
+        </div>
+
+        <div class="card">
+            <div class="flex-between mb-2">
+                <h3>Skor Keseimbangan Hidup</h3>
+                <span id="life-score-display" class="font-semibold text-accent" style="font-size: 20px;">0.0 / 10</span>
+            </div>
+            <p id="life-insight" class="text-sm mb-4"></p>
+            <div id="life-areas-container">
+                <!-- Slider Area Kehidupan dimuat di sini -->
+            </div>
+            <button class="btn btn-outline mt-4" onclick="saveLifeAreas()" style="padding: 10px;">Simpan Skor Hidup</button>
+        </div>
+
+        <div class="card">
+            <div class="flex-between mb-4">
+                <h3>Lini Masa Kehidupan</h3>
+                <button onclick="openModal('add-timeline-modal')" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;">+ Tambah</button>
+            </div>
+            <div id="timeline-list">
+                <!-- Lini Masa dimuat di sini -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigasi Bawah Mengambang -->
+    <nav id="bottom-nav" class="floating-nav hidden">
+        <button class="nav-item" data-target="today" onclick="navigate('today')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            Hari Ini
+        </button>
+        <button class="nav-item" data-target="goals" onclick="navigate('goals')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            Tujuan
+        </button>
+        <button class="nav-fab" onclick="openModal('create-new-modal')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button class="nav-item" data-target="journal" onclick="navigate('journal')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Jurnal
+        </button>
+        <button class="nav-item" data-target="me" onclick="navigate('me')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Saya
+        </button>
+    </nav>
+
+    <!-- Background Modal -->
+    <div id="modal-backdrop" class="modal-backdrop" onclick="closeAllModals()"></div>
+
+    <!-- Kumpulan Modal -->
+    
+    <!-- 1. Modal Buat Baru (Hub) -->
+    <div id="create-new-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Buat Baru</h2>
+        <div class="grid-2 mt-4">
+            <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px;" onclick="openModal('add-task-modal')">
+                <span style="font-size:24px;">✓</span> Tugas
+            </button>
+            <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px;" onclick="openModal('add-habit-modal')">
+                <span style="font-size:24px;">🔥</span> Kebiasaan
+            </button>
+            <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px;" onclick="openModal('add-goal-modal')">
+                <span style="font-size:24px;">🎯</span> Tujuan
+            </button>
+            <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px;" onclick="openModal('add-journal-modal')">
+                <span style="font-size:24px;">📖</span> Jurnal
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Modal Tambah Tugas -->
+    <div id="add-task-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Tambah Fokus Hari Ini</h2>
+        <input type="text" id="new-task-input" placeholder="Apa prioritas utamamu?">
+        <button class="btn mt-4" onclick="addTask()">Simpan Tugas</button>
+    </div>
+
+    <!-- 3. Modal Tambah Kebiasaan -->
+    <div id="add-habit-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Buat Kebiasaan</h2>
+        <input type="text" id="habit-emoji-input" placeholder="Emoji" maxlength="2" style="width: 80px; text-align:center; display:inline-block;">
+        <input type="text" id="habit-name-input" placeholder="Nama Kebiasaan" style="width: calc(100% - 90px); display:inline-block; margin-left: 5px;">
+        <button class="btn mt-4" onclick="addHabit()">Simpan Kebiasaan</button>
+    </div>
+
+    <!-- 4. Modal Tambah Tujuan -->
+    <div id="add-goal-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Tujuan Baru</h2>
+        <input type="text" id="goal-title" placeholder="Nama Tujuan (mis. Tabung Rp 5 Juta)">
+        <select id="goal-category">
+            <option value="💰 Keuangan">💰 Keuangan</option>
+            <option value="💼 Karier">💼 Karier</option>
+            <option value="🏃 Kesehatan">🏃 Kesehatan</option>
+            <option value="❤️ Hubungan">❤️ Hubungan</option>
+            <option value="🧠 Pengembangan Diri">🧠 Pengembangan Diri</option>
+            <option value="📚 Pendidikan">📚 Pendidikan</option>
+            <option value="🕌 Spiritual">🕌 Spiritual</option>
+            <option value="🏠 Keluarga">🏠 Keluarga</option>
+        </select>
+        <textarea id="goal-why" placeholder="Mengapa tujuan ini penting?"></textarea>
+        <input type="date" id="goal-deadline">
+        <button class="btn mt-4" onclick="addGoal()">Buat Tujuan</button>
+    </div>
+
+    <!-- 5. Modal Tambah Jurnal -->
+    <div id="add-journal-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2 id="journal-modal-title">Tulis Jurnal</h2>
+        <select id="journal-template" onchange="applyJournalTemplate()">
+            <option value="brain_dump">💭 Tumpahan Pikiran (Brain Dump)</option>
+            <option value="daily">📝 Refleksi Harian</option>
+            <option value="gratitude">🙏 Jurnal Syukur</option>
+            <option value="night">🌙 Refleksi Malam</option>
+        </select>
+        <input type="text" id="journal-title" placeholder="Judul Jurnal">
+        <div class="mood-selector mb-4" id="journal-mood-selector">
+            <button class="mood-btn" data-mood="😞" onclick="setJournalMood('😞')">😞</button>
+            <button class="mood-btn" data-mood="😕" onclick="setJournalMood('😕')">😕</button>
+            <button class="mood-btn" data-mood="😐" onclick="setJournalMood('😐')">😐</button>
+            <button class="mood-btn" data-mood="🙂" onclick="setJournalMood('🙂')">🙂</button>
+            <button class="mood-btn" data-mood="😄" onclick="setJournalMood('😄')">😄</button>
+        </div>
+        <textarea id="journal-content" placeholder="Tulis semua yang ada di pikiranmu..."></textarea>
+        <input type="hidden" id="editing-journal-id" value="">
+        <button class="btn mt-4" onclick="saveJournal()">Simpan Jurnal</button>
+    </div>
+
+    <!-- 6. Modal Detail Tujuan -->
+    <div id="goal-detail-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="flex-between mb-4">
+            <span class="text-sm font-semibold text-accent" id="gd-category"></span>
+            <button class="btn-outline btn-danger" style="padding: 4px 8px; font-size:12px; border:none;" onclick="deleteCurrentGoal()">Hapus</button>
+        </div>
+        <h2 id="gd-title"></h2>
+        <p id="gd-why" class="mb-4" style="font-style:italic;"></p>
+        
+        <div class="flex-between text-sm mb-2">
+            <span>Progres</span>
+            <span id="gd-progress-text" class="font-semibold text-accent">0%</span>
+        </div>
+        <div class="progress-bar-bg mb-4">
+            <div class="progress-bar-fill" id="gd-progress-bar" style="width:0%"></div>
+        </div>
+        <p class="text-sm mb-4">Tenggat Waktu: <span id="gd-deadline" class="font-semibold"></span></p>
+        
+        <h3>Milestone (Pencapaian)</h3>
+        <div id="gd-milestones" class="mb-4"></div>
+        
+        <div class="flex-between">
+            <input type="text" id="new-milestone-input" placeholder="Tambah milestone..." style="width: 70%; margin-bottom:0;">
+            <button class="btn" style="width: 25%; padding: 14px 0;" onclick="addMilestone()">Tambah</button>
+        </div>
+        <input type="hidden" id="current-goal-id">
+    </div>
+
+    <!-- 7. Modal Lini Masa -->
+    <div id="add-timeline-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Tambah Peristiwa</h2>
+        <input type="date" id="tl-date">
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="tl-emoji" placeholder="Emoji" maxlength="2" style="width: 80px; text-align:center;">
+            <input type="text" id="tl-title" placeholder="Judul Peristiwa" style="flex:1;">
+        </div>
+        <textarea id="tl-desc" placeholder="Deskripsi singkat..."></textarea>
+        <button class="btn mt-4" onclick="addTimelineEvent()">Simpan Peristiwa</button>
+    </div>
+
+    <!-- 8. Modal Pengaturan -->
+    <div id="settings-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Pengaturan</h2>
+        
+        <div class="card mt-4">
+            <h3>Tema Tampilan</h3>
+            <select id="theme-select" onchange="changeTheme(this.value)">
+                <option value="auto">Sistem Otomatis</option>
+                <option value="light">Mode Terang (Light)</option>
+                <option value="dark">Mode Gelap (Dark)</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h3>Manajemen Data</h3>
+            <p class="text-sm mb-4">Datamu hanya tersimpan di perangkat ini. Ekspor untuk mencadangkan.</p>
+            <button class="btn mb-2" onclick="exportData()">Ekspor Cadangan (JSON)</button>
+            
+            <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(event)">
+            <button class="btn btn-outline mb-4" onclick="document.getElementById('import-file').click()">Impor Cadangan</button>
+            
+            <button class="btn btn-danger" onclick="resetData()">Hapus Semua Data</button>
+        </div>
+
+        <div style="text-align:center; opacity: 0.5; margin-top: 20px;">
+            <p class="text-sm font-semibold">RuangDiri v1.0</p>
+            <p class="text-sm">Personal Life Planner</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* ==========================================================================
+       MANAJEMEN DATA & STATE
+       ========================================================================== */
+    const STORAGE_KEY = 'ruangDiriData';
+    
+    const defaultData = {
+        version: "1.0",
+        profile: { name: "", focus: "", avatar: "👤" },
+        settings: { theme: "auto" },
+        tasks: [], 
+        habits: [], 
+        habitLogs: {}, 
+        goals: [], 
+        journal: [], 
+        moods: {}, 
+        lifeAreas: {
+            "Keuangan": 5, "Hubungan": 5, "Kesehatan": 5, "Pengembangan Diri": 5,
+            "Karier": 5, "Pendidikan": 5, "Spiritual": 5, "Keluarga": 5
+        },
+        timeline: []
+    };
+
+    let appData = {};
+    let activeJournalMood = '😐';
+
+    const loadData = () => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                appData = JSON.parse(stored);
+                // Menggabungkan field jika ada update versi data ke depannya
+                appData.lifeAreas = { ...defaultData.lifeAreas, ...(appData.lifeAreas || {}) };
+            } catch (e) {
+                console.error("Kesalahan saat mengurai local storage", e);
+                appData = JSON.parse(JSON.stringify(defaultData));
+            }
+        } else {
+            appData = JSON.parse(JSON.stringify(defaultData));
+        }
+        applyTheme();
+    };
+
+    const saveData = () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    };
+
+    const generateId = () => Math.random().toString(36).substr(2, 9);
+    
+    const getTodayStr = () => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    };
+
+    const quotes = [
+        "Kemajuan dibangun satu hari demi satu hari.",
+        "Tindakan kecil menciptakan perubahan yang berarti.",
+        "Kamu tidak harus memperbaiki semuanya hari ini.",
+        "Konsistensi mengalahkan intensitas.",
+        "Langkah kecil tetap membawa hidupmu maju.",
+        "Fokus pada anak tangga di depanmu, bukan seluruh tangga."
+    ];
+
+    /* ==========================================================================
+       UTILITAS UI (Modal, Toast, Navigasi)
+       ========================================================================== */
+    const showToast = (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        const icon = type === 'success' ? '✓' : (type === 'danger' ? '⚠️' : 'ℹ️');
+        const color = type === 'success' ? 'var(--success)' : (type === 'danger' ? 'var(--danger)' : 'var(--accent)');
+        toast.innerHTML = `<span style="color:${color}; font-weight:bold;">${icon}</span> ${message}`;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideDown 0.3s ease reverse forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+
+    const openModal = (id) => {
+        // Menutup menu Hub secara halus jika membuka modal lain
+        if(id !== 'create-new-modal') {
+            document.getElementById('create-new-modal').classList.remove('active');
+        }
+        document.getElementById('modal-backdrop').classList.add('active');
+        document.getElementById(id).classList.add('active');
+        
+        if (id === 'add-journal-modal') resetJournalModal();
+    };
+
+    const closeAllModals = () => {
+        document.getElementById('modal-backdrop').classList.remove('active');
+        document.querySelectorAll('.bottom-sheet').forEach(m => m.classList.remove('active'));
+    };
+
+    const navigate = (viewId) => {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        const activeNav = document.querySelector(`.nav-item[data-target="${viewId}"]`);
+        if(activeNav) activeNav.classList.add('active');
+
+        // Merender data berdasarkan halaman aktif
+        if (viewId === 'today') renderToday();
+        else if (viewId === 'goals') renderGoals();
+        else if (viewId === 'journal') renderJournal();
+        else if (viewId === 'me') renderMe();
+
+        window.scrollTo(0,0);
+    };
+
+    /* ==========================================================================
+       ONBOARDING
+       ========================================================================== */
+    let currentSlide = 1;
+    const nextOnboarding = () => {
+        if (currentSlide < 4) {
+            document.getElementById(`ob-slide-${currentSlide}`).classList.remove('active');
+            document.getElementById(`ob-dots`).children[currentSlide-1].classList.remove('active');
+            currentSlide++;
+            document.getElementById(`ob-slide-${currentSlide}`).classList.add('active');
+            document.getElementById(`ob-dots`).children[currentSlide-1].classList.add('active');
+            if(currentSlide === 4) {
+                document.getElementById('ob-next-btn').innerText = "Mulai Perjalananku";
+            }
+        } else {
+            // Selesai onboarding
+            const name = document.getElementById('ob-name').value.trim() || 'Teman';
+            const focus = document.getElementById('ob-focus').value;
+            appData.profile.name = name;
+            appData.profile.focus = focus;
+            saveData();
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            navigate('today');
+        }
+    };
+
+    /* ==========================================================================
+       TAMPILAN HARI INI (Dashboard, Tugas, Mood, Kebiasaan)
+       ========================================================================== */
+    const renderToday = () => {
+        const todayStr = getTodayStr();
+        const dateObj = new Date();
+        
+        // Header
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('today-date').innerText = dateObj.toLocaleDateString('id-ID', options);
+        
+        const hour = dateObj.getHours();
+        let greeting = "Selamat Malam";
+        if (hour < 11) greeting = "Selamat Pagi";
+        else if (hour < 15) greeting = "Selamat Siang";
+        else if (hour < 18) greeting = "Selamat Sore";
+        
+        document.getElementById('today-greeting').innerText = `${greeting}, ${appData.profile.name}.`;
+        
+        const quoteIndex = dateObj.getDate() % quotes.length;
+        document.getElementById('today-quote').innerText = `"${quotes[quoteIndex]}"`;
+
+        // Mood
+        document.querySelectorAll('#mood-selector .mood-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.mood === appData.moods[todayStr]) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Tugas (Fokus)
+        // Membersihkan tugas kemarin yang sudah selesai, simpan yang belum atau yang selesai hari ini
+        appData.tasks = appData.tasks.filter(t => !t.completed || t.dateCompleted === todayStr);
+        saveData();
+
+        const focusList = document.getElementById('focus-list');
+        const addBtn = document.getElementById('add-focus-btn');
+        
+        let completedCount = appData.tasks.filter(t => t.completed).length;
+        let totalCount = appData.tasks.length;
+        
+        document.getElementById('focus-progress-text').innerText = `${completedCount} dari ${totalCount} selesai`;
+        document.getElementById('focus-progress-bar').style.width = totalCount === 0 ? '0%' : `${(completedCount/totalCount)*100}%`;
+
+        if (totalCount >= 3 && appData.tasks.filter(t => !t.completed).length >=3 ) {
+            addBtn.style.display = 'none'; // Maks 3 fokus aktif
+        } else {
+            addBtn.style.display = 'inline-block';
+        }
+
+        if (totalCount === 0) {
+            focusList.innerHTML = `<p class="text-sm text-center mb-4">Belum ada prioritas hari ini.</p>`;
+        } else {
+            focusList.innerHTML = appData.tasks.map(t => `
+                <div class="checkbox-wrapper" onclick="toggleTask('${t.id}')">
+                    <div class="checkbox ${t.completed ? 'checked' : ''}"></div>
+                    <span class="task-text">${t.text}</span>
+                    <button style="background:none;border:none;color:var(--danger);padding:4px;cursor:pointer;" onclick="deleteTask('${t.id}', event)">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // Kebiasaan
+        renderHabitsList();
+    };
+
+    const addTask = () => {
+        const input = document.getElementById('new-task-input');
+        const text = input.value.trim();
+        if (text) {
+            appData.tasks.push({
+                id: generateId(),
+                text: text,
+                completed: false,
+                dateCreated: getTodayStr(),
+                dateCompleted: null
+            });
+            saveData();
+            input.value = '';
+            closeAllModals();
+            renderToday();
+            showToast('Tugas ditambahkan');
+        }
+    };
+
+    const toggleTask = (id) => {
+        const task = appData.tasks.find(t => t.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            task.dateCompleted = task.completed ? getTodayStr() : null;
+            saveData();
+            renderToday();
+        }
+    };
+
+    const deleteTask = (id, event) => {
+        event.stopPropagation();
+        appData.tasks = appData.tasks.filter(t => t.id !== id);
+        saveData();
+        renderToday();
+    };
+
+    const setMood = (emoji) => {
+        const todayStr = getTodayStr();
+        appData.moods[todayStr] = emoji;
+        saveData();
+        renderToday();
+        showToast('Suasana hati disimpan');
+    };
+
+    const addHabit = () => {
+        const name = document.getElementById('habit-name-input').value.trim();
+        const emoji = document.getElementById('habit-emoji-input').value.trim() || '🔥';
+        if (name) {
+            appData.habits.push({
+                id: generateId(),
+                name,
+                emoji,
+                created: getTodayStr()
+            });
+            saveData();
+            document.getElementById('habit-name-input').value = '';
+            document.getElementById('habit-emoji-input').value = '';
+            closeAllModals();
+            if(document.getElementById('view-today').classList.contains('active')) renderToday();
+            showToast('Kebiasaan dibuat');
+        }
+    };
+
+    const calculateStreak = (habitId) => {
+        let streak = 0;
+        let checkDate = new Date();
+        const todayStr = getTodayStr();
+        
+        // Cek hari ini
+        if(appData.habitLogs[todayStr] && appData.habitLogs[todayStr].includes(habitId)) {
+            streak++;
+        }
+        
+        // Hitung mundur ke hari-hari sebelumnya
+        checkDate.setDate(checkDate.getDate() - 1);
+        while(true) {
+            const dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
+            if(appData.habitLogs[dateStr] && appData.habitLogs[dateStr].includes(habitId)) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+        return streak;
+    };
+
+    const toggleHabit = (habitId) => {
+        const todayStr = getTodayStr();
+        if (!appData.habitLogs[todayStr]) appData.habitLogs[todayStr] = [];
+        
+        const idx = appData.habitLogs[todayStr].indexOf(habitId);
+        if (idx > -1) {
+            appData.habitLogs[todayStr].splice(idx, 1);
+        } else {
+            appData.habitLogs[todayStr].push(habitId);
+            showToast('Kebiasaan diselesaikan');
+        }
+        saveData();
+        renderHabitsList();
+    };
+
+    const renderHabitsList = () => {
+        const container = document.getElementById('habit-list');
+        const todayStr = getTodayStr();
+        
+        if (appData.habits.length === 0) {
+            container.innerHTML = `<div class="empty-state">
+                <div class="empty-icon">🌱</div>
+                <p>Belum ada kebiasaan. Mulailah dari yang kecil.</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = appData.habits.map(h => {
+            const isDone = appData.habitLogs[todayStr] && appData.habitLogs[todayStr].includes(h.id);
+            const streak = calculateStreak(h.id);
+            return `
+                <div class="habit-item">
+                    <div class="habit-info">
+                        <div class="habit-emoji">${h.emoji}</div>
+                        <div>
+                            <div class="font-semibold" style="font-size:15px;">${h.name}</div>
+                            <div class="habit-stats">🔥 ${streak} hari berturut-turut</div>
+                        </div>
+                    </div>
+                    <div class="habit-check ${isDone ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+                        ${isDone ? '✓' : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+
+    /* ==========================================================================
+       TAMPILAN TUJUAN (Goals)
+       ========================================================================== */
+    const renderGoals = () => {
+        const list = document.getElementById('goals-list');
+        if (appData.goals.length === 0) {
+            list.innerHTML = `<div class="empty-state">
+                <div class="empty-icon">🎯</div>
+                <p>Belum ada tujuan yang dibuat. Tentukan visimu.</p>
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = appData.goals.map(g => {
+            const completedMilestones = g.milestones.filter(m => m.completed).length;
+            const progress = g.milestones.length === 0 ? 0 : Math.round((completedMilestones / g.milestones.length) * 100);
+            
+            return `
+                <div class="card journal-card" onclick="openGoalDetail('${g.id}')">
+                    <div class="flex-between mb-2">
+                        <span class="text-sm text-accent font-semibold">${g.category.replace(/[^\w\s]/gi, '')}</span>
+                        <span class="text-sm font-semibold">${progress}%</span>
+                    </div>
+                    <h3>${g.title}</h3>
+                    <div class="progress-bar-bg mb-2">
+                        <div class="progress-bar-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <p class="text-sm">Tenggat: ${g.deadline || 'Tidak ada'}</p>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const addGoal = () => {
+        const title = document.getElementById('goal-title').value.trim();
+        const category = document.getElementById('goal-category').value;
+        const why = document.getElementById('goal-why').value.trim();
+        const deadline = document.getElementById('goal-deadline').value;
+
+        if (title) {
+            appData.goals.push({
+                id: generateId(),
+                title, category, why, deadline,
+                milestones: []
+            });
+            saveData();
+            document.getElementById('goal-title').value = '';
+            document.getElementById('goal-why').value = '';
+            closeAllModals();
+            if(document.getElementById('view-goals').classList.contains('active')) renderGoals();
+            showToast('Tujuan dibuat');
+        }
+    };
+
+    const openGoalDetail = (id) => {
+        const goal = appData.goals.find(g => g.id === id);
+        if(!goal) return;
+
+        document.getElementById('current-goal-id').value = goal.id;
+        document.getElementById('gd-category').innerText = goal.category.replace(/[^\w\s]/gi, '');
+        document.getElementById('gd-title').innerText = goal.title;
+        document.getElementById('gd-why').innerText = goal.why ? `"${goal.why}"` : '';
+        document.getElementById('gd-deadline').innerText = goal.deadline || '-';
+
+        renderMilestones(goal.id);
+        openModal('goal-detail-modal');
+    };
+
+    const renderMilestones = (goalId) => {
+        const goal = appData.goals.find(g => g.id === goalId);
+        const container = document.getElementById('gd-milestones');
+        
+        const completedMilestones = goal.milestones.filter(m => m.completed).length;
+        const progress = goal.milestones.length === 0 ? 0 : Math.round((completedMilestones / goal.milestones.length) * 100);
+        
+        document.getElementById('gd-progress-text').innerText = `${progress}%`;
+        document.getElementById('gd-progress-bar').style.width = `${progress}%`;
+
+        if(goal.milestones.length === 0) {
+            container.innerHTML = `<p class="text-sm text-center">Belum ada milestone. Pecah tujuanmu agar lebih mudah.</p>`;
+        } else {
+            container.innerHTML = goal.milestones.map(m => `
+                <div class="checkbox-wrapper" onclick="toggleMilestone('${goal.id}', '${m.id}')">
+                    <div class="checkbox ${m.completed ? 'checked' : ''}"></div>
+                    <span class="task-text">${m.text}</span>
+                    <button style="background:none;border:none;color:var(--danger);padding:4px;cursor:pointer;" onclick="deleteMilestone('${goal.id}', '${m.id}', event)">✕</button>
+                </div>
+            `).join('');
+        }
+    };
+
+    const addMilestone = () => {
+        const goalId = document.getElementById('current-goal-id').value;
+        const input = document.getElementById('new-milestone-input');
+        const text = input.value.trim();
+        
+        if(text && goalId) {
+            const goal = appData.goals.find(g => g.id === goalId);
+            goal.milestones.push({ id: generateId(), text, completed: false });
+            saveData();
+            input.value = '';
+            renderMilestones(goalId);
+            renderGoals(); // Update list di latar
+        }
+    };
+
+    const toggleMilestone = (goalId, milestoneId) => {
+        const goal = appData.goals.find(g => g.id === goalId);
+        const ms = goal.milestones.find(m => m.id === milestoneId);
+        ms.completed = !ms.completed;
+        saveData();
+        renderMilestones(goalId);
+        renderGoals();
+    };
+
+    const deleteMilestone = (goalId, milestoneId, event) => {
+        event.stopPropagation();
+        const goal = appData.goals.find(g => g.id === goalId);
+        goal.milestones = goal.milestones.filter(m => m.id !== milestoneId);
+        saveData();
+        renderMilestones(goalId);
+        renderGoals();
+    };
+
+    const deleteCurrentGoal = () => {
+        if(confirm('Apakah kamu yakin ingin menghapus tujuan ini?')) {
+            const goalId = document.getElementById('current-goal-id').value;
+            appData.goals = appData.goals.filter(g => g.id !== goalId);
+            saveData();
+            closeAllModals();
+            renderGoals();
+            showToast('Tujuan dihapus');
+        }
+    };
+
+    /* ==========================================================================
+       TAMPILAN JURNAL
+       ========================================================================== */
+    const templates = {
+        brain_dump: { title: "", content: "" },
+        daily: { title: "Refleksi Harian", content: "Bagaimana perasaanku hari ini?\n\n\nApa hal terbaik yang terjadi hari ini?\n\n\nApa tantangan yang aku hadapi hari ini?\n\n\nApa yang aku pelajari?\n\n\nApa yang bisa aku lakukan lebih baik besok?\n" },
+        gratitude: { title: "Jurnal Syukur", content: "Hari ini aku bersyukur untuk:\n1. \n2. \n3. \n" },
+        night: { title: "Refleksi Malam", content: "Apa yang menguras energiku hari ini?\n\n\nApa yang memberiku energi?\n\n\nPikiran sebelum tidur:\n" }
+    };
+
+    const renderJournal = () => {
+        const list = document.getElementById('journal-list');
+        const search = document.getElementById('journal-search').value.toLowerCase();
+        
+        let filtered = appData.journal.sort((a,b) => new Date(b.date) - new Date(a.date));
+        if(search) {
+            filtered = filtered.filter(j => j.title.toLowerCase().includes(search) || j.content.toLowerCase().includes(search));
+        }
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<div class="empty-state">
+                <div class="empty-icon">📖</div>
+                <p>Belum ada catatan. Tulis ceritamu.</p>
+            </div>`;
+            return;
+        }
+
+        list.innerHTML = filtered.map(j => {
+            const dateObj = new Date(j.date);
+            const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            return `
+                <div class="card journal-card" onclick="editJournal('${j.id}')">
+                    <div class="flex-between mb-2">
+                        <span class="journal-date">${dateStr}</span>
+                        <span style="font-size: 20px;">${j.mood}</span>
+                    </div>
+                    <h3>${j.title}</h3>
+                    <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${j.content.replace(/\n/g, '<br>')}</p>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const applyJournalTemplate = () => {
+        const type = document.getElementById('journal-template').value;
+        const isEditing = document.getElementById('editing-journal-id').value !== "";
+        if(!isEditing) {
+            document.getElementById('journal-title').value = templates[type].title;
+            document.getElementById('journal-content').value = templates[type].content;
+        }
+    };
+
+    const setJournalMood = (emoji) => {
+        activeJournalMood = emoji;
+        document.querySelectorAll('#journal-mood-selector .mood-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.mood === emoji) btn.classList.add('active');
+        });
+    };
+
+    const resetJournalModal = () => {
+        document.getElementById('journal-modal-title').innerText = "Tulis Jurnal";
+        document.getElementById('editing-journal-id').value = "";
+        document.getElementById('journal-template').value = "brain_dump";
+        document.getElementById('journal-template').style.display = "block";
+        document.getElementById('journal-title').value = "";
+        document.getElementById('journal-content').value = "";
+        setJournalMood('😐');
+    };
+
+    const saveJournal = () => {
+        const id = document.getElementById('editing-journal-id').value;
+        const title = document.getElementById('journal-title').value.trim() || 'Tanpa Judul';
+        const content = document.getElementById('journal-content').value.trim();
+        const type = document.getElementById('journal-template').value;
+        
+        if (content) {
+            if (id) {
+                const j = appData.journal.find(x => x.id === id);
+                if(j) {
+                    j.title = title;
+                    j.content = content;
+                    j.mood = activeJournalMood;
+                }
+            } else {
+                appData.journal.push({
+                    id: generateId(),
+                    date: new Date().toISOString(),
+                    title, content, type,
+                    mood: activeJournalMood
+                });
+            }
+            saveData();
+            closeAllModals();
+            if(document.getElementById('view-journal').classList.contains('active')) renderJournal();
+            showToast('Jurnal disimpan');
+        } else {
+            showToast('Isi jurnal tidak boleh kosong', 'danger');
+        }
+    };
+
+    const editJournal = (id) => {
+        const j = appData.journal.find(x => x.id === id);
+        if(j) {
+            document.getElementById('journal-modal-title').innerText = "Edit Jurnal";
+            document.getElementById('editing-journal-id').value = j.id;
+            document.getElementById('journal-template').style.display = "none";
+            document.getElementById('journal-title').value = j.title;
+            document.getElementById('journal-content').value = j.content;
+            setJournalMood(j.mood);
+            openModal('add-journal-modal');
+        }
+    };
+
+    /* ==========================================================================
+       TAMPILAN SAYA (Dashboard Kehidupan)
+       ========================================================================== */
+    const renderMe = () => {
+        document.getElementById('profile-name').innerText = appData.profile.name;
+        document.getElementById('profile-focus').innerText = `Fokus Utama: ${appData.profile.focus}`;
+
+        const container = document.getElementById('life-areas-container');
+        let total = 0;
+        let count = 0;
+        let minScore = 10;
+        let lowestArea = "";
+
+        let html = '';
+        for (const [area, score] of Object.entries(appData.lifeAreas)) {
+            total += parseInt(score);
+            count++;
+            if(parseInt(score) < minScore) {
+                minScore = parseInt(score);
+                lowestArea = area;
+            }
+            html += `
+                <div class="life-area-row">
+                    <div class="life-area-header">
+                        <span>${area}</span>
+                        <span class="font-semibold" id="val-${area.replace(/\s+/g, '')}">${score}/10</span>
+                    </div>
+                    <input type="range" min="1" max="10" value="${score}" data-area="${area}" oninput="updateAreaLabel(this)">
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+
+        const avg = (total / count).toFixed(1);
+        document.getElementById('life-score-display').innerText = `${avg} / 10`;
+
+        let insight = "Keseimbangan hidupmu terlihat baik. Terus pertahankan.";
+        if (avg < 5) {
+            insight = "Segalanya mungkin terasa berat saat ini. Jalani perlahan selangkah demi selangkah.";
+        } else if (minScore < 5) {
+            insight = `Area ${lowestArea.toLowerCase()} mungkin butuh lebih banyak perhatian bulan ini.`;
+        }
+        document.getElementById('life-insight').innerText = insight;
+
+        renderTimeline();
+    };
+
+    const updateAreaLabel = (el) => {
+        const areaId = el.dataset.area.replace(/\s+/g, '');
+        document.getElementById(`val-${areaId}`).innerText = `${el.value}/10`;
+    };
+
+    const saveLifeAreas = () => {
+        const inputs = document.querySelectorAll('#life-areas-container input[type="range"]');
+        inputs.forEach(input => {
+            appData.lifeAreas[input.dataset.area] = parseInt(input.value);
+        });
+        saveData();
+        renderMe();
+        showToast('Skor kehidupan diperbarui');
+    };
+
+    const renderTimeline = () => {
+        const container = document.getElementById('timeline-list');
+        const sorted = appData.timeline.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        if (sorted.length === 0) {
+            container.innerHTML = `<p class="text-sm text-center opacity-70">Belum ada catatan peristiwa hidup. Tambahkan momen pentingmu di sini.</p>`;
+            return;
+        }
+
+        container.innerHTML = sorted.map(t => {
+            const d = new Date(t.date).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+            return `
+                <div class="timeline-item">
+                    <div class="timeline-emoji">${t.emoji}</div>
+                    <span class="text-sm text-accent font-semibold">${d}</span>
+                    <div style="background:var(--bg); padding:10px 14px; border-radius:12px; margin-top:4px; border: 1px solid var(--border);">
+                        <h4 style="margin-bottom:4px;">${t.title}</h4>
+                        ${t.desc ? `<p class="text-sm">${t.desc}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const addTimelineEvent = () => {
+        const date = document.getElementById('tl-date').value;
+        const emoji = document.getElementById('tl-emoji').value.trim() || '✨';
+        const title = document.getElementById('tl-title').value.trim();
+        const desc = document.getElementById('tl-desc').value.trim();
+
+        if (date && title) {
+            appData.timeline.push({ id: generateId(), date, emoji, title, desc });
+            saveData();
+            document.getElementById('tl-date').value = '';
+            document.getElementById('tl-emoji').value = '';
+            document.getElementById('tl-title').value = '';
+            document.getElementById('tl-desc').value = '';
+            closeAllModals();
+            if(document.getElementById('view-me').classList.contains('active')) renderTimeline();
+            showToast('Peristiwa ditambahkan ke lini masa');
+        } else {
+            showToast('Tanggal dan Judul wajib diisi', 'danger');
+        }
+    };
+
+    /* ==========================================================================
+       PENGATURAN & MANAJEMEN DATA
+       ========================================================================== */
+    const changeTheme = (mode) => {
+        appData.settings.theme = mode;
+        saveData();
+        applyTheme();
+    };
+
+    const applyTheme = () => {
+        const mode = appData.settings.theme;
+        const isDarkSys = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (mode === 'dark' || (mode === 'auto' && isDarkSys)) {
+            document.body.classList.add('dark');
+        } else {
+            document.body.classList.remove('dark');
+        }
+        document.getElementById('theme-select').value = mode;
+    };
+
+    // Deteksi perubahan tema sistem jika mode diatur ke auto
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if(appData.settings.theme === 'auto') applyTheme();
+    });
+
+    const exportData = () => {
+        const dataStr = JSON.stringify(appData, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ruangdiri_backup_${getTodayStr()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Cadangan diunduh');
+    };
+
+    const importData = (event) => {
+        const file = event.target.files[0];
+        if(!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if(parsed.version) {
+                    appData = parsed;
+                    saveData();
+                    closeAllModals();
+                    renderApp();
+                    showToast('Data berhasil diimpor');
+                } else {
+                    showToast('File cadangan tidak valid', 'danger');
+                }
+            } catch(err) {
+                showToast('Terjadi kesalahan membaca file', 'danger');
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const resetData = () => {
+        if(confirm('PERINGATAN: Tindakan ini akan menghapus semua datamu secara permanen. Apakah kamu yakin?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    };
+
+
+    /* ==========================================================================
+       INISIALISASI APLIKASI
+       ========================================================================== */
+    const renderApp = () => {
+        if (!appData.profile.name) {
+            // Tampilkan Onboarding jika pertama kali dibuka
+            document.getElementById('view-onboarding').classList.add('active');
+        } else {
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            navigate('today');
+        }
+    };
+
+    window.onload = () => {
+        loadData();
+        renderApp();
+    };
+
+</script>
+</body>
+</html>

@@ -185,7 +185,7 @@
         .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
         .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         
-        input[type="text"], input[type="date"], select, textarea {
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
             width: 100%;
             background: var(--bg);
             border: 1px solid var(--border);
@@ -374,6 +374,31 @@
         .journal-card:hover { transform: translateY(-2px); }
         .journal-date { font-size: 12px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         
+        /* Aktivitas Harian (Log) */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-time {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+            width: 45px;
+            text-align: right;
+        }
+        .activity-emoji {
+            font-size: 20px;
+            background: var(--bg);
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+        }
+        .activity-text { flex: 1; font-size: 15px; font-weight: 500; }
+
         .life-area-row { margin-bottom: 16px; }
         .life-area-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
         input[type=range] {
@@ -440,11 +465,6 @@
             from { transform: translateY(-20px); opacity: 0; } 
             to { transform: translateY(0); opacity: 1; } 
         }
-        @keyframes pop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
     </style>
 </head>
 <body>
@@ -510,6 +530,7 @@
             <p id="today-quote" class="text-sm" style="font-style: italic;"></p>
         </header>
 
+        <!-- Bagian Fokus -->
         <div class="card">
             <div class="flex-between mb-4">
                 <h3>Fokus Hari Ini</h3>
@@ -526,6 +547,7 @@
             </button>
         </div>
 
+        <!-- Bagian Mood -->
         <div class="card">
             <h3>Bagaimana perasaanmu hari ini?</h3>
             <div class="mood-selector" id="mood-selector">
@@ -537,13 +559,25 @@
             </div>
         </div>
 
+        <!-- Bagian Kebiasaan -->
         <div class="card">
             <div class="flex-between mb-4">
-                <h3>Kebiasaan Hari Ini</h3>
+                <h3>Kebiasaan</h3>
                 <button onclick="openModal('add-habit-modal')" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;">+ Tambah</button>
             </div>
             <div id="habit-list">
                 <!-- Kebiasaan dimuat di sini -->
+            </div>
+        </div>
+
+        <!-- Bagian Aktivitas Harian (Fitur Baru) -->
+        <div class="card">
+            <div class="flex-between mb-4">
+                <h3>Aktivitas Hari Ini</h3>
+                <button onclick="openAddActivityModal()" style="background:none;border:none;color:var(--accent);font-weight:bold;cursor:pointer;">+ Catat</button>
+            </div>
+            <div id="activity-list">
+                <!-- Aktivitas dimuat di sini -->
             </div>
         </div>
     </div>
@@ -652,6 +686,9 @@
             <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px;" onclick="openModal('add-journal-modal')">
                 <span style="font-size:24px;">📖</span> Jurnal
             </button>
+            <button class="btn btn-outline" style="flex-direction:column; padding:20px 10px; gap:12px; grid-column: span 2;" onclick="openAddActivityModal()">
+                <span style="font-size:24px;">⏱️</span> Aktivitas Harian
+            </button>
         </div>
     </div>
 
@@ -672,7 +709,19 @@
         <button class="btn mt-4" onclick="addHabit()">Simpan Kebiasaan</button>
     </div>
 
-    <!-- 4. Modal Tambah Tujuan -->
+    <!-- 4. Modal Tambah Aktivitas (Fitur Baru) -->
+    <div id="add-activity-modal" class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <h2>Catat Aktivitas</h2>
+        <input type="time" id="activity-time-input">
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="activity-emoji-input" placeholder="Emoji" maxlength="2" style="width: 80px; text-align:center;">
+            <input type="text" id="activity-text-input" placeholder="Apa yang kamu lakukan?" style="flex:1;">
+        </div>
+        <button class="btn mt-4" onclick="addActivity()">Simpan Aktivitas</button>
+    </div>
+
+    <!-- 5. Modal Tambah Tujuan -->
     <div id="add-goal-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <h2>Tujuan Baru</h2>
@@ -692,7 +741,7 @@
         <button class="btn mt-4" onclick="addGoal()">Buat Tujuan</button>
     </div>
 
-    <!-- 5. Modal Tambah Jurnal -->
+    <!-- 6. Modal Tambah Jurnal -->
     <div id="add-journal-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <h2 id="journal-modal-title">Tulis Jurnal</h2>
@@ -715,7 +764,7 @@
         <button class="btn mt-4" onclick="saveJournal()">Simpan Jurnal</button>
     </div>
 
-    <!-- 6. Modal Detail Tujuan -->
+    <!-- 7. Modal Detail Tujuan -->
     <div id="goal-detail-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="flex-between mb-4">
@@ -744,7 +793,7 @@
         <input type="hidden" id="current-goal-id">
     </div>
 
-    <!-- 7. Modal Lini Masa -->
+    <!-- 8. Modal Lini Masa -->
     <div id="add-timeline-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <h2>Tambah Peristiwa</h2>
@@ -757,7 +806,7 @@
         <button class="btn mt-4" onclick="addTimelineEvent()">Simpan Peristiwa</button>
     </div>
 
-    <!-- 8. Modal Pengaturan -->
+    <!-- 9. Modal Pengaturan -->
     <div id="settings-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <h2>Pengaturan</h2>
@@ -803,6 +852,7 @@
         tasks: [], 
         habits: [], 
         habitLogs: {}, 
+        activities: [], // Properti baru untuk aktivitas harian
         goals: [], 
         journal: [], 
         moods: {}, 
@@ -823,6 +873,7 @@
                 appData = JSON.parse(stored);
                 // Menggabungkan field jika ada update versi data ke depannya
                 appData.lifeAreas = { ...defaultData.lifeAreas, ...(appData.lifeAreas || {}) };
+                if (!appData.activities) appData.activities = []; // Kompatibilitas data lama
             } catch (e) {
                 console.error("Kesalahan saat mengurai local storage", e);
                 appData = JSON.parse(JSON.stringify(defaultData));
@@ -872,7 +923,6 @@
     };
 
     const openModal = (id) => {
-        // Menutup menu Hub secara halus jika membuka modal lain
         if(id !== 'create-new-modal') {
             document.getElementById('create-new-modal').classList.remove('active');
         }
@@ -895,7 +945,6 @@
         const activeNav = document.querySelector(`.nav-item[data-target="${viewId}"]`);
         if(activeNav) activeNav.classList.add('active');
 
-        // Merender data berdasarkan halaman aktif
         if (viewId === 'today') renderToday();
         else if (viewId === 'goals') renderGoals();
         else if (viewId === 'journal') renderJournal();
@@ -919,7 +968,6 @@
                 document.getElementById('ob-next-btn').innerText = "Mulai Perjalananku";
             }
         } else {
-            // Selesai onboarding
             const name = document.getElementById('ob-name').value.trim() || 'Teman';
             const focus = document.getElementById('ob-focus').value;
             appData.profile.name = name;
@@ -931,7 +979,7 @@
     };
 
     /* ==========================================================================
-       TAMPILAN HARI INI (Dashboard, Tugas, Mood, Kebiasaan)
+       TAMPILAN HARI INI (Dashboard, Tugas, Mood, Kebiasaan, Aktivitas)
        ========================================================================== */
     const renderToday = () => {
         const todayStr = getTodayStr();
@@ -961,7 +1009,6 @@
         });
 
         // Tugas (Fokus)
-        // Membersihkan tugas kemarin yang sudah selesai, simpan yang belum atau yang selesai hari ini
         appData.tasks = appData.tasks.filter(t => !t.completed || t.dateCompleted === todayStr);
         saveData();
 
@@ -975,7 +1022,7 @@
         document.getElementById('focus-progress-bar').style.width = totalCount === 0 ? '0%' : `${(completedCount/totalCount)*100}%`;
 
         if (totalCount >= 3 && appData.tasks.filter(t => !t.completed).length >=3 ) {
-            addBtn.style.display = 'none'; // Maks 3 fokus aktif
+            addBtn.style.display = 'none'; 
         } else {
             addBtn.style.display = 'inline-block';
         }
@@ -994,8 +1041,12 @@
 
         // Kebiasaan
         renderHabitsList();
+
+        // Aktivitas Harian
+        renderActivitiesList();
     };
 
+    /* --- Fungsi Tugas --- */
     const addTask = () => {
         const input = document.getElementById('new-task-input');
         const text = input.value.trim();
@@ -1040,6 +1091,73 @@
         showToast('Suasana hati disimpan');
     };
 
+    /* --- Fungsi Aktivitas Harian --- */
+    const openAddActivityModal = () => {
+        // Set default waktu ke jam saat ini
+        const now = new Date();
+        const timeString = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('activity-time-input').value = timeString;
+        document.getElementById('activity-emoji-input').value = '';
+        document.getElementById('activity-text-input').value = '';
+        
+        openModal('add-activity-modal');
+    };
+
+    const addActivity = () => {
+        const time = document.getElementById('activity-time-input').value;
+        const text = document.getElementById('activity-text-input').value.trim();
+        const emoji = document.getElementById('activity-emoji-input').value.trim() || '⏱️';
+        
+        if (time && text) {
+            appData.activities.push({
+                id: generateId(),
+                date: getTodayStr(),
+                time: time,
+                text: text,
+                emoji: emoji
+            });
+            saveData();
+            closeAllModals();
+            if(document.getElementById('view-today').classList.contains('active')) renderToday();
+            showToast('Aktivitas dicatat');
+        } else {
+            showToast('Waktu dan nama aktivitas wajib diisi', 'danger');
+        }
+    };
+
+    const deleteActivity = (id, event) => {
+        event.stopPropagation();
+        appData.activities = appData.activities.filter(a => a.id !== id);
+        saveData();
+        renderToday();
+    };
+
+    const renderActivitiesList = () => {
+        const container = document.getElementById('activity-list');
+        const todayStr = getTodayStr();
+        
+        // Ambil aktivitas hari ini dan urutkan berdasarkan waktu (terlama ke terbaru)
+        let todayActivities = appData.activities.filter(a => a.date === todayStr);
+        todayActivities.sort((a, b) => a.time.localeCompare(b.time));
+
+        if (todayActivities.length === 0) {
+            container.innerHTML = `<div class="empty-state" style="padding:20px;">
+                <p class="text-sm">Belum ada aktivitas tercatat hari ini.</p>
+            </div>`;
+            return;
+        }
+
+        container.innerHTML = todayActivities.map(a => `
+            <div class="activity-item">
+                <div class="activity-time">${a.time}</div>
+                <div class="activity-emoji">${a.emoji}</div>
+                <div class="activity-text">${a.text}</div>
+                <button style="background:none;border:none;color:var(--danger);padding:4px;cursor:pointer;font-size:16px;" onclick="deleteActivity('${a.id}', event)">✕</button>
+            </div>
+        `).join('');
+    };
+
+    /* --- Fungsi Kebiasaan --- */
     const addHabit = () => {
         const name = document.getElementById('habit-name-input').value.trim();
         const emoji = document.getElementById('habit-emoji-input').value.trim() || '🔥';
@@ -1064,12 +1182,10 @@
         let checkDate = new Date();
         const todayStr = getTodayStr();
         
-        // Cek hari ini
         if(appData.habitLogs[todayStr] && appData.habitLogs[todayStr].includes(habitId)) {
             streak++;
         }
         
-        // Hitung mundur ke hari-hari sebelumnya
         checkDate.setDate(checkDate.getDate() - 1);
         while(true) {
             const dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
@@ -1103,9 +1219,8 @@
         const todayStr = getTodayStr();
         
         if (appData.habits.length === 0) {
-            container.innerHTML = `<div class="empty-state">
-                <div class="empty-icon">🌱</div>
-                <p>Belum ada kebiasaan. Mulailah dari yang kecil.</p>
+            container.innerHTML = `<div class="empty-state" style="padding: 20px;">
+                <p class="text-sm">Belum ada kebiasaan. Mulailah dari yang kecil.</p>
             </div>`;
             return;
         }
@@ -1233,7 +1348,7 @@
             saveData();
             input.value = '';
             renderMilestones(goalId);
-            renderGoals(); // Update list di latar
+            renderGoals(); 
         }
     };
 
@@ -1507,7 +1622,6 @@
         document.getElementById('theme-select').value = mode;
     };
 
-    // Deteksi perubahan tema sistem jika mode diatur ke auto
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
         if(appData.settings.theme === 'auto') applyTheme();
     });
@@ -1563,7 +1677,6 @@
        ========================================================================== */
     const renderApp = () => {
         if (!appData.profile.name) {
-            // Tampilkan Onboarding jika pertama kali dibuka
             document.getElementById('view-onboarding').classList.add('active');
         } else {
             document.getElementById('bottom-nav').classList.remove('hidden');

@@ -77,6 +77,7 @@
         h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
         h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 12px; }
         h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
         p { color: var(--text-muted); font-size: 15px; }
         .text-sm { font-size: 13px; }
         .font-semibold { font-weight: 600; }
@@ -351,6 +352,48 @@
         .mb-2 { margin-bottom: 8px; }
         .mb-4 { margin-bottom: 16px; }
         
+        /* Kalender Riwayat */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .cal-day-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-bottom: 8px;
+        }
+        .cal-date {
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .cal-date:hover { background: var(--border); }
+        .cal-date.active { background: var(--accent); color: white; font-weight: bold; }
+        .cal-date.has-data::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        .cal-date.active.has-data::after { background: white; }
+        .cal-empty { background: transparent; pointer-events: none; }
+
         /* Komponen Spesifik */
         .habit-item {
             display: flex;
@@ -524,11 +567,15 @@
 
     <!-- Tampilan Hari Ini -->
     <div id="view-today" class="view">
-        <header class="mb-4">
-            <p id="today-date" class="text-sm font-semibold text-accent" style="text-transform:uppercase"></p>
-            <h1 id="today-greeting">Selamat Pagi</h1>
-            <p id="today-quote" class="text-sm" style="font-style: italic;"></p>
+        <header class="mb-4 flex-between" style="align-items: flex-start;">
+            <div>
+                <p id="today-date" class="text-sm font-semibold text-accent" style="text-transform:uppercase"></p>
+                <h1 id="today-greeting">Selamat Pagi</h1>
+            </div>
+            <!-- Tombol Kalender Riwayat -->
+            <button onclick="openHistoryModal()" style="background:var(--card-bg); border:1px solid var(--border); border-radius:50%; width:44px; height:44px; font-size:20px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:var(--shadow-sm);">📅</button>
         </header>
+        <p id="today-quote" class="text-sm mb-4" style="font-style: italic;"></p>
 
         <!-- Bagian Fokus -->
         <div class="card">
@@ -570,7 +617,7 @@
             </div>
         </div>
 
-        <!-- Bagian Aktivitas Harian (Fitur Baru) -->
+        <!-- Bagian Aktivitas Harian -->
         <div class="card">
             <div class="flex-between mb-4">
                 <h3>Aktivitas Hari Ini</h3>
@@ -669,6 +716,29 @@
 
     <!-- Kumpulan Modal -->
     
+    <!-- 0. Modal Riwayat (Kalender) -->
+    <div id="history-modal" class="bottom-sheet" style="height: 90vh; display: flex; flex-direction: column; padding-bottom: 0;">
+        <div class="sheet-handle"></div>
+        <h2 class="mb-2">Riwayat & Kalender</h2>
+        
+        <!-- Kalender -->
+        <div class="calendar-wrapper card mt-2" style="padding: 16px; margin-bottom: 12px; flex-shrink: 0;">
+            <div class="flex-between mb-2">
+                <button class="btn-outline" onclick="changeCalendarMonth(-1)" style="padding: 4px 12px; border-radius:8px;">&lt;</button>
+                <h3 id="cal-month-year" style="margin:0; font-size:16px;">Bulan Tahun</h3>
+                <button class="btn-outline" onclick="changeCalendarMonth(1)" style="padding: 4px 12px; border-radius:8px;">&gt;</button>
+            </div>
+            <div class="calendar-grid" id="cal-grid">
+                <!-- Hari dan Tanggal dimuat di sini -->
+            </div>
+        </div>
+
+        <!-- Detail Riwayat -->
+        <div id="history-details" style="flex: 1; overflow-y: auto; padding-bottom: calc(24px + var(--safe-bottom));">
+            <!-- Informasi riwayat tanggal terpilih dimuat di sini -->
+        </div>
+    </div>
+
     <!-- 1. Modal Buat Baru (Hub) -->
     <div id="create-new-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
@@ -709,7 +779,7 @@
         <button class="btn mt-4" onclick="addHabit()">Simpan Kebiasaan</button>
     </div>
 
-    <!-- 4. Modal Tambah Aktivitas (Fitur Baru) -->
+    <!-- 4. Modal Tambah Aktivitas -->
     <div id="add-activity-modal" class="bottom-sheet">
         <div class="sheet-handle"></div>
         <h2>Catat Aktivitas</h2>
@@ -852,7 +922,7 @@
         tasks: [], 
         habits: [], 
         habitLogs: {}, 
-        activities: [], // Properti baru untuk aktivitas harian
+        activities: [], 
         goals: [], 
         journal: [], 
         moods: {}, 
@@ -866,14 +936,17 @@
     let appData = {};
     let activeJournalMood = '😐';
 
+    // State untuk Kalender Riwayat
+    let calDate = new Date(); 
+    let selDateStr = ""; 
+
     const loadData = () => {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             try {
                 appData = JSON.parse(stored);
-                // Menggabungkan field jika ada update versi data ke depannya
                 appData.lifeAreas = { ...defaultData.lifeAreas, ...(appData.lifeAreas || {}) };
-                if (!appData.activities) appData.activities = []; // Kompatibilitas data lama
+                if (!appData.activities) appData.activities = [];
             } catch (e) {
                 console.error("Kesalahan saat mengurai local storage", e);
                 appData = JSON.parse(JSON.stringify(defaultData));
@@ -979,13 +1052,155 @@
     };
 
     /* ==========================================================================
+       FITUR RIWAYAT KALENDER (Baru)
+       ========================================================================== */
+    const openHistoryModal = () => {
+        calDate = new Date(); // Reset ke bulan saat ini
+        selDateStr = getTodayStr(); // Pilih hari ini
+        renderCalendar();
+        openModal('history-modal');
+    };
+
+    const changeCalendarMonth = (dir) => {
+        calDate.setMonth(calDate.getMonth() + dir);
+        renderCalendar();
+    };
+
+    const selectHistoryDate = (dateStr) => {
+        selDateStr = dateStr;
+        renderCalendar();
+    };
+
+    const checkDataExists = (dStr) => {
+        if(appData.moods[dStr]) return true;
+        if(appData.habitLogs[dStr] && appData.habitLogs[dStr].length > 0) return true;
+        if(appData.activities.some(a => a.date === dStr)) return true;
+        if(appData.tasks.some(t => t.dateCompleted === dStr)) return true;
+        if(appData.journal.some(j => {
+            const jd = new Date(j.date);
+            const js = `${jd.getFullYear()}-${String(jd.getMonth()+1).padStart(2,'0')}-${String(jd.getDate()).padStart(2,'0')}`;
+            return js === dStr;
+        })) return true;
+        return false;
+    };
+
+    const renderCalendar = () => {
+        const year = calDate.getFullYear();
+        const month = calDate.getMonth(); 
+        
+        document.getElementById('cal-month-year').innerText = calDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        
+        const firstDayIndex = new Date(year, month, 1).getDay(); 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        let html = `
+            <div class="cal-day-header">Min</div><div class="cal-day-header">Sen</div>
+            <div class="cal-day-header">Sel</div><div class="cal-day-header">Rab</div>
+            <div class="cal-day-header">Kam</div><div class="cal-day-header">Jum</div>
+            <div class="cal-day-header">Sab</div>
+        `;
+        
+        for(let i=0; i<firstDayIndex; i++) {
+            html += `<div class="cal-empty"></div>`;
+        }
+        
+        for(let i=1; i<=daysInMonth; i++) {
+            const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const isActive = (dStr === selDateStr) ? 'active' : '';
+            const hasData = checkDataExists(dStr) ? 'has-data' : '';
+            
+            html += `<div class="cal-date ${isActive} ${hasData}" onclick="selectHistoryDate('${dStr}')">${i}</div>`;
+        }
+        
+        document.getElementById('cal-grid').innerHTML = html;
+        renderHistoryDetails(selDateStr);
+    };
+
+    const renderHistoryDetails = (dStr) => {
+        const container = document.getElementById('history-details');
+        
+        const niceDateParts = dStr.split('-');
+        const niceDateObj = new Date(niceDateParts[0], niceDateParts[1]-1, niceDateParts[2]);
+        const niceDateStr = niceDateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        
+        let html = `<h3 class="mb-4 text-center text-accent" style="position:sticky; top:0; background:var(--modal-bg); padding:10px 0; z-index:10;">${niceDateStr}</h3>`;
+        let contentHtml = "";
+
+        // Mood
+        const mood = appData.moods[dStr];
+        if(mood) {
+            contentHtml += `<div class="card flex-center mb-4"><span style="font-size:40px;">${mood}</span></div>`;
+        }
+        
+        // Aktivitas
+        const acts = appData.activities.filter(a => a.date === dStr).sort((a, b) => a.time.localeCompare(b.time));
+        if(acts.length > 0) {
+            contentHtml += `<div class="card mb-4"><h4>Aktivitas</h4>`;
+            acts.forEach(a => {
+                contentHtml += `<div class="activity-item" style="border:none; padding:8px 0;">
+                    <div class="activity-time">${a.time}</div>
+                    <div class="activity-emoji">${a.emoji}</div>
+                    <div class="activity-text">${a.text}</div>
+                </div>`;
+            });
+            contentHtml += `</div>`;
+        }
+        
+        // Kebiasaan
+        const hLogs = appData.habitLogs[dStr] || [];
+        if(hLogs.length > 0) {
+            contentHtml += `<div class="card mb-4"><h4>Kebiasaan Selesai</h4><div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">`;
+            hLogs.forEach(hId => {
+                const h = appData.habits.find(x => x.id === hId);
+                if(h) contentHtml += `<span style="background:var(--bg); padding:6px 12px; border-radius:20px; font-size:14px; border:1px solid var(--border);">${h.emoji} ${h.name}</span>`;
+            });
+            contentHtml += `</div></div>`;
+        }
+        
+        // Tugas Selesai
+        const tasks = appData.tasks.filter(t => t.dateCompleted === dStr);
+        if(tasks.length > 0) {
+            contentHtml += `<div class="card mb-4"><h4>Tugas Selesai</h4><ul style="padding-left:20px; margin-top:8px;">`;
+            tasks.forEach(t => {
+                contentHtml += `<li style="font-size:14px; margin-bottom:4px; color:var(--text-muted);"><del>${t.text}</del></li>`;
+            });
+            contentHtml += `</ul></div>`;
+        }
+
+        // Jurnal
+        const journals = appData.journal.filter(j => {
+            const jd = new Date(j.date);
+            const js = `${jd.getFullYear()}-${String(jd.getMonth()+1).padStart(2,'0')}-${String(jd.getDate()).padStart(2,'0')}`;
+            return js === dStr;
+        });
+        if(journals.length > 0) {
+            contentHtml += `<div class="card mb-4"><h4>Jurnal</h4>`;
+            journals.forEach(j => {
+                contentHtml += `<div style="background:var(--bg); padding:16px; border-radius:12px; margin-top:12px; border:1px solid var(--border);">
+                    <strong style="display:block; margin-bottom:8px;">${j.title}</strong>
+                    <p class="text-sm" style="white-space:pre-wrap; line-height: 1.6;">${j.content}</p>
+                </div>`;
+            });
+            contentHtml += `</div>`;
+        }
+        
+        if(contentHtml === "") {
+            html += `<div class="empty-state"><p class="text-sm opacity-70">Tidak ada catatan untuk hari ini.</p></div>`;
+        } else {
+            html += contentHtml;
+        }
+        
+        container.innerHTML = html;
+    };
+
+
+    /* ==========================================================================
        TAMPILAN HARI INI (Dashboard, Tugas, Mood, Kebiasaan, Aktivitas)
        ========================================================================== */
     const renderToday = () => {
         const todayStr = getTodayStr();
         const dateObj = new Date();
         
-        // Header
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
         document.getElementById('today-date').innerText = dateObj.toLocaleDateString('id-ID', options);
         
@@ -1000,7 +1215,6 @@
         const quoteIndex = dateObj.getDate() % quotes.length;
         document.getElementById('today-quote').innerText = `"${quotes[quoteIndex]}"`;
 
-        // Mood
         document.querySelectorAll('#mood-selector .mood-btn').forEach(btn => {
             btn.classList.remove('active');
             if (btn.dataset.mood === appData.moods[todayStr]) {
@@ -1008,7 +1222,6 @@
             }
         });
 
-        // Tugas (Fokus)
         appData.tasks = appData.tasks.filter(t => !t.completed || t.dateCompleted === todayStr);
         saveData();
 
@@ -1039,10 +1252,7 @@
             `).join('');
         }
 
-        // Kebiasaan
         renderHabitsList();
-
-        // Aktivitas Harian
         renderActivitiesList();
     };
 
@@ -1093,7 +1303,6 @@
 
     /* --- Fungsi Aktivitas Harian --- */
     const openAddActivityModal = () => {
-        // Set default waktu ke jam saat ini
         const now = new Date();
         const timeString = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
         document.getElementById('activity-time-input').value = timeString;
@@ -1136,7 +1345,6 @@
         const container = document.getElementById('activity-list');
         const todayStr = getTodayStr();
         
-        // Ambil aktivitas hari ini dan urutkan berdasarkan waktu (terlama ke terbaru)
         let todayActivities = appData.activities.filter(a => a.date === todayStr);
         todayActivities.sort((a, b) => a.time.localeCompare(b.time));
 
@@ -1244,7 +1452,6 @@
             `;
         }).join('');
     };
-
 
     /* ==========================================================================
        TAMPILAN TUJUAN (Goals)
